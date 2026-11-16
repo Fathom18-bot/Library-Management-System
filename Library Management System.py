@@ -1,4 +1,5 @@
-# "Borrowed" is False from the start. True = borrowed, False = returned/available
+# LIBRARY MANAGEMENT SYSTEM (no nested functions: functions call other functions)
+
 Books = [
     {"Title": "Othello", "Author": "William Shakespeare", "Borrowed": False},
     {"Title": "Harvest of Corruption", "Author": "Frank Ogodo Ogbeche", "Borrowed": False},
@@ -7,26 +8,25 @@ Books = [
     {"Title": "A Raisin in the Sun", "Author": "Lorraine Hansberry", "Borrowed": False},
 ]
 
-# All accounts (libarians AND users): {username: {"Password": ..., "Role": ...}}
 Accounts = {
     "admin": {"Password": "1234", "Role": "libarian"},
 }
 
-# LIBARIAN (menu shown after a libarian logs in)
+# LIBARIAN FUNCTIONS
+def add_book(book_title, book_author):
+    Books.append({"Title": book_title, "Author": book_author, "Borrowed": False})
+    print(f"Successfully added '{book_title}'")
+
+def remove_book(book_title):
+    for book in Books:
+        if book_title.lower() == book["Title"].lower():
+            Books.remove(book)
+            print(f"Successfully removed '{book_title}'")
+            return
+    print("Book not found")
+
+
 def Libarian(name):
-
-    def add_book(book_title, book_author):
-        Books.append({"Title": book_title, "Author": book_author, "Borrowed": False})
-        print(f"Successfully added '{book_title}'")
-
-    def remove_book(book_title):
-        for book in Books:
-            if book_title.lower() == book["Title"].lower():
-                Books.remove(book)
-                print(f"Successfully removed '{book_title}'")
-                return
-        print("Book not found")
-
     print(f"\nWelcome Libarian {name}")
     while True:
         option = input("\nWhat would you like to do: \n1. Add a Book \n2. Remove a Book \n3. Logout \n: ")
@@ -43,51 +43,53 @@ def Libarian(name):
         else:
             print("Invalid input")
 
+# USER FUNCTIONS
+def view_books():
+    if len(Books) == 0:
+        print("No books in the library")
+        return
+    print("\n--- ALL BOOKS ---")
+    for number, book in enumerate(Books, start=1):
+        status = "Borrowed" if book["Borrowed"] else "Available"
+        print(f"{number}. {book['Title']} by {book['Author']} [{status}]")
 
-# USER (menu shown after a user logs in)
-def User(name):
 
-    def view_books():
-        if len(Books) == 0:
-            print("No books in the library")
-            return
-        print("\n--- ALL BOOKS ---")
-        for number, book in enumerate(Books, start=1):
+def search_book(search_word):
+    found = False
+    for book in Books:
+        if search_word.lower() in str(book["Title"]).lower() or search_word.lower() in str(book["Author"]).lower():
             status = "Borrowed" if book["Borrowed"] else "Available"
-            print(f"{number}. {book['Title']} by {book['Author']} [{status}]")
+            print(f"- {book['Title']} by {book['Author']} [{status}]")
+            found = True
+    if not found:
+        print("No book found")
 
-    def search_book(search_word):
-        found = False
-        for book in Books:
-            if search_word.lower() in str(book["Title"]).lower() or search_word.lower() in str(book["Author"]).lower():
-                status = "Borrowed" if book["Borrowed"] else "Available"
-                print(f"- {book['Title']} by {book['Author']} [{status}]")
-                found = True
-        if not found:
-            print("No book found")
 
-    def borrow_book(book_title):
-        for book in Books:
-            if book_title.lower() == str(book["Title"]).lower():
-                if book["Borrowed"]:
-                    print("Sorry, this book has already been borrowed")
-                else:
-                    book["Borrowed"] = True
-                    print(f"You have borrowed '{book['Title']}'")
-                return
-        print("Book not found")
+def borrow_book(book_title):
+    for book in Books:
+        if book_title.lower() == str(book["Title"]).lower():
+            if book["Borrowed"]:
+                print("Sorry, this book has already been borrowed")
+            else:
+                book["Borrowed"] = True
+                print(f"You have borrowed '{book['Title']}'")
+            return
+    print("Book not found")
 
-    def return_book(book_title):
-        for book in Books:
-            if book_title.lower() == str(book["Title"]).lower():
-                if book["Borrowed"]:
-                    book["Borrowed"] = False
-                    print(f"You have returned '{book['Title']}'. Thank you!")
-                else:
-                    print("This book was not borrowed")
-                return
-        print("Book not found")
 
+def return_book(book_title):
+    for book in Books:
+        if book_title.lower() == str(book["Title"]).lower():
+            if book["Borrowed"]:
+                book["Borrowed"] = False
+                print(f"You have returned '{book['Title']}'. Thank you!")
+            else:
+                print("This book was not borrowed")
+            return
+    print("Book not found")
+
+
+def User(name):
     print(f"\nWelcome {name}")
     while True:
         option = input(
@@ -111,22 +113,24 @@ def User(name):
         else:
             print("Invalid input")
 
+# SIGNUP / LOGIN / MAIN PROGRAM
+def signup(new_username, new_password, new_role):
+    if new_username in Accounts:
+        print("Username already taken. Try another one.")
+        return
+    Accounts[new_username] = {"Password": new_password, "Role": new_role}
+    print(f"Signup successful as a {new_role}! You can now login.")
+
+
+def login(user_name, user_password):
+    if user_name in Accounts and Accounts[user_name]["Password"] == user_password:
+        print("Login Successful")
+        return Accounts[user_name]["Role"]
+    print("Wrong username or password")
+    return None
+
+
 def start():
-
-    def signup(new_username, new_password, new_role):
-        if new_username in Accounts:
-            print("Username already taken. Try another one.")
-            return
-        Accounts[new_username] = {"Password": new_password, "Role": new_role}
-        print(f"Signup successful as a {new_role}! You can now login.")
-
-    def login(user_name, user_password):
-        if user_name in Accounts and Accounts[user_name]["Password"] == user_password:
-            print("Login Successful")
-            return Accounts[user_name]["Role"]
-        print("Wrong username or password")
-        return None
-
     while True:
         print("\nWELCOME to School 2 Library")
         choice = input("1. Signup \n2. Login \n3. Exit \n: ")
@@ -158,6 +162,5 @@ def start():
             break
         else:
             print("Invalid input, Try again!")
-
 
 start()
